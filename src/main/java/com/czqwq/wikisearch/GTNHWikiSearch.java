@@ -3,7 +3,6 @@ package com.czqwq.wikisearch;
 import java.awt.Desktop;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
@@ -57,7 +56,7 @@ public class GTNHWikiSearch {
 
         try {
             // 只获取物品的显示名称
-            displayName = URLEncoder.encode(stack.getDisplayName(), StandardCharsets.UTF_8);
+            displayName = URLEncoder.encode(stack.getDisplayName(), "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
             return false;
