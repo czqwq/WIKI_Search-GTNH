@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.7.11",
+  "package": "com.czqwq.wikisearch.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "wikisearch.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "GUIKeyDownMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
