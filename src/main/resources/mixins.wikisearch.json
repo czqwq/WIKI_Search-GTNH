@@ -3,9 +3,7 @@
   "minVersion": "0.7.11",
   "package": "com.czqwq.wikisearch.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "wikisearch.refmap.json",
-  "mixins": [
-  ],
+  "refmap": "mixins.wikisearch.refmap.json",
   "client": [
     "GUIKeyDownMixin"
   ],

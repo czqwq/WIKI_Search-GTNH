@@ -19,8 +19,9 @@ public abstract class GUIKeyDownMixin extends GuiScreen {
     @Shadow
     private Slot theSlot;
 
-    @Inject(method = "keyTyped", at = @At("TAIL"))
-    public void onKeyInput(char keyChar, int keyCode, CallbackInfo ci) {
+    @Inject(method = "func_73869_a", at = @At("TAIL"))
+
+    public void onKeyInput(char typedChar, int keyCode, CallbackInfo ci) {
         // 添加调试日志
         GTNHWikiSearch.LOGGER.info("Key typed in GUI: " + keyCode);
 
