@@ -23,7 +23,7 @@ public abstract class GUIKeyDownMixin extends GuiScreen {
 
     public void onKeyInput(char typedChar, int keyCode, CallbackInfo ci) {
         // 添加调试日志
-        //GTNHWikiSearch.LOGGER.info("Key typed in GUI: " + keyCode);
+        // GTNHWikiSearch.LOGGER.info("Key typed in GUI: " + keyCode);
 
         // 确保按键绑定已经初始化且不为null
         if (GTNHWikiSearch.key != null) {
