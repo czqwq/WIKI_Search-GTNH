@@ -48,35 +48,13 @@ public class GTNHWikiSearch {
         }
     }
 
-    /** Send a search request to the server for the given item stack. */
+    /** Start an async wiki search for the given item stack. Runs entirely on the client. */
     @SideOnly(Side.CLIENT)
     public static void search(ItemStack stack) {
         String displayName = stack.getDisplayName();
-        LOGGER.debug("Sending wiki search request for: " + displayName);
-        WikiSearchNetwork.CHANNEL.sendToServer(new WikiSearchRequestMessage(displayName));
-    }
-
-    /** Open a URL in the system browser. Used by clickable chat result links. */
-    public static boolean openUrl(String url) {
-        try {
-            if (Desktop.isDesktopSupported() || System.getProperty("os.name")
-                .contains("Windows")) {
-                Desktop.getDesktop()
-                    .browse(new URI(url));
-            } else {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getProperty("os.name")
-                    .contains("Mac")) {
-                    runtime.exec(new String[] { "open", url });
-                } else {
-                    runtime.exec(new String[] { "xdg-open", url });
-                }
-            }
-            return true;
-        } catch (Exception e) {
-            LOGGER.error("Failed to open the url: " + url);
-            e.printStackTrace();
-            return false;
-        }
+        LOGGER.debug("Starting wiki search for: " + displayName);
+        Thread thread = new Thread(() -> WikiSearchFetcher.fetchAndDisplay(displayName), "WikiSearch-" + displayName);
+        thread.setDaemon(true);
+        thread.start();
     }
 }

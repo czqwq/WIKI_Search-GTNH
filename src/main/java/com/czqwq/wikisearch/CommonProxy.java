@@ -7,18 +7,11 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class CommonProxy {
 
-    public void preInit(FMLPreInitializationEvent event) {
-        Config.init(event.getSuggestedConfigurationFile());
-        wikisearch.LOG.info("WikiSearch version " + Tags.VERSION + " initializing");
-    }
+    public void preInit(FMLPreInitializationEvent event) {}
 
-    public void init(FMLInitializationEvent event) {
-        WikiSearchNetwork.init();
-    }
+    public void init(FMLInitializationEvent event) {}
 
     public void postInit(FMLPostInitializationEvent event) {}
 
-    public void serverStarting(FMLServerStartingEvent event) {
-        event.registerServerCommand(new WikiSearchCommand());
-    }
+    public void serverStarting(FMLServerStartingEvent event) {}
 }

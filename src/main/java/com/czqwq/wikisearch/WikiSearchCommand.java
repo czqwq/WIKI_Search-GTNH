@@ -9,6 +9,10 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+@SideOnly(Side.CLIENT)
 public class WikiSearchCommand extends CommandBase {
 
     @Override
@@ -23,7 +27,7 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public int getRequiredPermissionLevel() {
-        return 2; // OP
+        return 0;
     }
 
     @Override
@@ -41,11 +45,11 @@ public class WikiSearchCommand extends CommandBase {
 
         sender.addChatMessage(
             new ChatComponentText(
-                EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.GREEN + "Cookie已设置并保存到配置文件。"));
+                EnumChatFormatting.GOLD + "[WikiSearch] "
+                    + EnumChatFormatting.GREEN
+                    + "Cookie已设置并保存到本地配置文件。"));
 
-        wikisearch.LOG.info(
-            "WikiSearch cookie updated by " + sender.getCommandSenderName() + " (length=" + Config.cookie.length()
-                + ")");
+        wikisearch.LOG.info("WikiSearch cookie updated (length=" + Config.cookie.length() + ")");
     }
 
     @Override

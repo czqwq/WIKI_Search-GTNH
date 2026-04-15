@@ -9,7 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.HoverEvent;
 import net.minecraft.util.ChatComponentText;
@@ -22,6 +23,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+@SideOnly(Side.CLIENT)
 public class WikiSearchFetcher {
 
     private static final String WIKI_BASE = "https://gtnh.huijiwiki.com";
@@ -40,15 +45,22 @@ public class WikiSearchFetcher {
         }
     }
 
-    /** Perform search and send formatted results to the player via chat. */
-    public static void search(String itemName, EntityPlayerMP player) {
+    /**
+     * Perform search and send formatted results to the local player's chat.
+     * Must be called from a background thread.
+     */
+    public static void fetchAndDisplay(String itemName) {
         String cookie = Config.cookie;
         if (cookie == null || cookie.isEmpty()) {
-            sendError(
-                player,
-                "未设置Cookie，无法访问Wiki。请联系OP使用 " + EnumChatFormatting.YELLOW + "/wikisearch cookie <cookie>"
-                    + EnumChatFormatting.RED
-                    + " 进行设置。");
+            sendChat(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] "
+                        + EnumChatFormatting.RED
+                        + "未设置Cookie，无法访问Wiki。请使用 "
+                        + EnumChatFormatting.YELLOW
+                        + "/wikisearch cookie <cookie>"
+                        + EnumChatFormatting.RED
+                        + " 进行设置。"));
             return;
         }
 
@@ -57,50 +69,55 @@ public class WikiSearchFetcher {
             results = fetchResults(itemName, cookie);
         } catch (Exception e) {
             GTNHWikiSearch.LOGGER.error("WikiSearch HTTP request failed", e);
-            sendError(player, "搜索请求失败: " + e.getMessage());
+            sendChat(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] "
+                        + EnumChatFormatting.RED
+                        + "搜索请求失败: "
+                        + e.getMessage()));
             return;
         }
 
         if (results.isEmpty()) {
-            IChatComponent msg = new ChatComponentText(
-                EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.RED + "未找到 \""
-                    + EnumChatFormatting.YELLOW
-                    + itemName
-                    + EnumChatFormatting.RED
-                    + "\" 的相关页面。");
-            player.addChatMessage(msg);
+            sendChat(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] "
+                        + EnumChatFormatting.RED
+                        + "未找到 \""
+                        + EnumChatFormatting.YELLOW
+                        + itemName
+                        + EnumChatFormatting.RED
+                        + "\" 的相关页面。"));
             return;
         }
 
-        // Header
-        IChatComponent header = new ChatComponentText(
-            EnumChatFormatting.GOLD + "[WikiSearch] "
-                + EnumChatFormatting.RESET
-                + "搜索 \""
-                + EnumChatFormatting.YELLOW
-                + itemName
-                + EnumChatFormatting.RESET
-                + "\" 的结果 ("
-                + results.size()
-                + " 项):");
-        player.addChatMessage(header);
+        sendChat(
+            new ChatComponentText(
+                EnumChatFormatting.GOLD + "[WikiSearch] "
+                    + EnumChatFormatting.RESET
+                    + "搜索 \""
+                    + EnumChatFormatting.YELLOW
+                    + itemName
+                    + EnumChatFormatting.RESET
+                    + "\" 的结果 ("
+                    + results.size()
+                    + " 项):"));
 
         for (int i = 0; i < results.size(); i++) {
             SearchResult result = results.get(i);
 
-            // "1. 页面标题 [打开]"
             IChatComponent line = new ChatComponentText(
                 EnumChatFormatting.GRAY.toString() + (i + 1) + ". " + EnumChatFormatting.GREEN + result.title + " ");
 
             IChatComponent button = new ChatComponentText(EnumChatFormatting.AQUA + "[打开]");
-            ChatStyle style = new ChatStyle()
-                .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
-                .setChatHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(result.url)));
-            button.setChatStyle(style);
+            button.setChatStyle(
+                new ChatStyle()
+                    .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
+                    .setChatHoverEvent(
+                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(result.url))));
 
             line.appendSibling(button);
-            player.addChatMessage(line);
+            sendChat(line);
         }
     }
 
@@ -162,8 +179,12 @@ public class WikiSearchFetcher {
         return results;
     }
 
-    private static void sendError(EntityPlayerMP player, String message) {
-        player.addChatMessage(
-            new ChatComponentText(EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.RED + message));
+    /** Add a chat message to the local player. Safe to call from a background thread in 1.7.10. */
+    private static void sendChat(IChatComponent msg) {
+        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        if (player != null) {
+            player.addChatMessage(msg);
+        }
     }
 }
+
