@@ -22,7 +22,7 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/wikisearch <cookie <cookie>|reload>";
+        return "/wikisearch <cookie <cookie>|reload|ping [host]>";
     }
 
     @Override
@@ -37,6 +37,16 @@ public class WikiSearchCommand extends CommandBase {
             sender.addChatMessage(
                 new ChatComponentText(
                     EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.GREEN + "配置已从本地文件重新加载。"));
+            return;
+        }
+
+        if (args.length >= 1 && args[0].equalsIgnoreCase("ping")) {
+            String host = args.length >= 2 ? args[1] : Config.pingHost;
+            if (host == null || host.isEmpty()) host = Config.DEFAULT_PING_HOST;
+            final String targetHost = host;
+            Thread t = new Thread(() -> WikiSearchFetcher.pingAndDisplay(targetHost), "WikiSearch-ping");
+            t.setDaemon(true);
+            t.start();
             return;
         }
 
@@ -62,7 +72,7 @@ public class WikiSearchCommand extends CommandBase {
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "cookie", "reload");
+            return getListOfStringsMatchingLastWord(args, "cookie", "reload", "ping");
         }
         return null;
     }

@@ -3,6 +3,7 @@ package com.czqwq.wikisearch;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -152,7 +153,36 @@ public class WikiSearchFetcher {
 
         int code = conn.getResponseCode();
         if (code != 200) {
-            throw new RuntimeException("HTTP " + code);
+            // Collect diagnostic info for a detailed error message
+            StringBuilder diag = new StringBuilder();
+            diag.append("URL=")
+                .append(apiUrl);
+            diag.append(", Cookie=")
+                .append(cookie != null && !cookie.isEmpty() ? "set(len=" + cookie.length() + ")" : "not set");
+            // Log Cloudflare diagnostic headers if present
+            String cfRay = conn.getHeaderField("cf-ray");
+            String cfMitigated = conn.getHeaderField("cf-mitigated");
+            String server = conn.getHeaderField("server");
+            if (cfRay != null) diag.append(", cf-ray=")
+                .append(cfRay);
+            if (cfMitigated != null) diag.append(", cf-mitigated=")
+                .append(cfMitigated);
+            if (server != null) diag.append(", server=")
+                .append(server);
+            // Try to read the error response body (first 512 chars)
+            try (BufferedReader errReader = new BufferedReader(
+                new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
+                StringBuilder body = new StringBuilder();
+                String l;
+                while ((l = errReader.readLine()) != null && body.length() < 512) {
+                    body.append(l);
+                }
+                if (body.length() > 0) {
+                    diag.append(", errorBody=")
+                        .append(body.substring(0, Math.min(body.length(), 256)));
+                }
+            } catch (Exception ignored) {}
+            throw new RuntimeException("HTTP " + code + " [" + diag + "]");
         }
 
         StringBuilder sb = new StringBuilder();
@@ -165,6 +195,79 @@ public class WikiSearchFetcher {
         }
 
         return parseResults(sb.toString());
+    }
+
+    /**
+     * Test connectivity to the configured ping host and send the result to chat.
+     * Must be called from a background thread.
+     */
+    public static void pingAndDisplay(String host) {
+        sendChat(
+            new ChatComponentText(
+                EnumChatFormatting.GOLD + "[WikiSearch] "
+                    + EnumChatFormatting.RESET
+                    + "正在 ping "
+                    + EnumChatFormatting.YELLOW
+                    + host
+                    + EnumChatFormatting.RESET
+                    + " ..."));
+        try {
+            long start = System.currentTimeMillis();
+            InetAddress addr = InetAddress.getByName(host);
+            boolean reachable = addr.isReachable(TIMEOUT_MS);
+            long elapsed = System.currentTimeMillis() - start;
+            if (reachable) {
+                sendChat(
+                    new ChatComponentText(
+                        EnumChatFormatting.GOLD + "[WikiSearch] "
+                            + EnumChatFormatting.GREEN
+                            + "✔ "
+                            + host
+                            + " ("
+                            + addr.getHostAddress()
+                            + ") 可达，耗时 "
+                            + elapsed
+                            + " ms"));
+            } else {
+                // isReachable may return false when ICMP is blocked; try a TCP connection to port 80
+                try (java.net.Socket s = new java.net.Socket()) {
+                    s.connect(new java.net.InetSocketAddress(addr, 80), TIMEOUT_MS);
+                    elapsed = System.currentTimeMillis() - start;
+                    sendChat(
+                        new ChatComponentText(
+                            EnumChatFormatting.GOLD + "[WikiSearch] "
+                                + EnumChatFormatting.GREEN
+                                + "✔ "
+                                + host
+                                + " ("
+                                + addr.getHostAddress()
+                                + ") TCP:80 可达，耗时 "
+                                + elapsed
+                                + " ms"));
+                } catch (Exception tcpEx) {
+                    sendChat(
+                        new ChatComponentText(
+                            EnumChatFormatting.GOLD + "[WikiSearch] "
+                                + EnumChatFormatting.RED
+                                + "✘ "
+                                + host
+                                + " ("
+                                + addr.getHostAddress()
+                                + ") 不可达: "
+                                + tcpEx.getMessage()));
+                }
+            }
+        } catch (Exception e) {
+            GTNHWikiSearch.LOGGER.error("WikiSearch ping failed for host={}", host, e);
+            sendChat(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] "
+                        + EnumChatFormatting.RED
+                        + "✘ ping "
+                        + host
+                        + " 失败: "
+                        + e.getMessage()));
+        }
     }
 
     private static List<SearchResult> parseResults(String json) {

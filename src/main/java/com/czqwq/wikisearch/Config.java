@@ -11,9 +11,11 @@ public class Config {
     public static String cookie = "";
     public static String searchApiUrl = "";
     public static String wikiPageBase = "";
+    public static String pingHost = "";
 
     static final String DEFAULT_SEARCH_API_URL = "https://gtnh.huijiwiki.com/api.php?action=query&list=search&srnamespace=0&srlimit=8&format=json&srsearch={item}";
     static final String DEFAULT_WIKI_PAGE_BASE = "https://gtnh.huijiwiki.com";
+    static final String DEFAULT_PING_HOST = "baidu.com";
 
     public static void init(File configFile) {
         config = new Configuration(configFile);
@@ -36,6 +38,11 @@ public class Config {
             Configuration.CATEGORY_GENERAL,
             DEFAULT_WIKI_PAGE_BASE,
             "Base URL used to build result page links as <wikiPageBase>/wiki/<title>.");
+        pingHost = config.getString(
+            "pingHost",
+            Configuration.CATEGORY_GENERAL,
+            DEFAULT_PING_HOST,
+            "Hostname used by /wikisearch ping to test network connectivity.");
         if (config.hasChanged()) {
             config.save();
         }
