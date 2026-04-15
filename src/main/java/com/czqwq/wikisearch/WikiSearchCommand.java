@@ -22,7 +22,7 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/wikisearch cookie <cookie>";
+        return "/wikisearch <cookie <cookie>|reload>";
     }
 
     @Override
@@ -32,6 +32,14 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
+            Config.reload();
+            sender.addChatMessage(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.GREEN + "配置已从本地文件重新加载。"));
+            return;
+        }
+
         if (args.length < 2 || !args[0].equalsIgnoreCase("cookie")) {
             sender.addChatMessage(
                 new ChatComponentText(
@@ -45,9 +53,7 @@ public class WikiSearchCommand extends CommandBase {
 
         sender.addChatMessage(
             new ChatComponentText(
-                EnumChatFormatting.GOLD + "[WikiSearch] "
-                    + EnumChatFormatting.GREEN
-                    + "Cookie已设置并保存到本地配置文件。"));
+                EnumChatFormatting.GOLD + "[WikiSearch] " + EnumChatFormatting.GREEN + "Cookie已设置并保存到本地配置文件。"));
 
         wikisearch.LOG.info("WikiSearch cookie updated (length=" + Config.cookie.length() + ")");
     }
@@ -56,7 +62,7 @@ public class WikiSearchCommand extends CommandBase {
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "cookie");
+            return getListOfStringsMatchingLastWord(args, "cookie", "reload");
         }
         return null;
     }

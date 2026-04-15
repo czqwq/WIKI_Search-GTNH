@@ -18,22 +18,11 @@ public abstract class GUIKeyDownMixin extends GuiScreen {
 
     @Inject(method = "keyTyped(CI)V", at = @At("TAIL"))
     public void onKeyInput(char typedChar, int keyCode, CallbackInfo ci) {
-        if (GTNHWikiSearch.key != null) {
-            GTNHWikiSearch.LOGGER.debug("Key binding exists, key code: " + GTNHWikiSearch.key.getKeyCode());
-            if (keyCode == GTNHWikiSearch.key.getKeyCode()) {
-                GTNHWikiSearch.LOGGER.debug("Key match found");
-                // Use GuiContainerManager.getStackMouseOver to support container slots, NEI item panel,
-                // bookmark panel, and all other sources.
-                ItemStack stack = GuiContainerManager.getStackMouseOver((GuiContainer) (Object) this);
-                if (stack != null) {
-                    GTNHWikiSearch.LOGGER.debug("Item found: " + stack.getDisplayName());
-                    GTNHWikiSearch.search(stack);
-                } else {
-                    GTNHWikiSearch.LOGGER.debug("No item under mouse");
-                }
+        if (GTNHWikiSearch.key != null && keyCode == GTNHWikiSearch.key.getKeyCode()) {
+            ItemStack stack = GuiContainerManager.getStackMouseOver((GuiContainer) (Object) this);
+            if (stack != null) {
+                GTNHWikiSearch.search(stack);
             }
-        } else {
-            GTNHWikiSearch.LOGGER.debug("Key binding is null");
         }
     }
 }

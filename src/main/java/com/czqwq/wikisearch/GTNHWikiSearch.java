@@ -1,8 +1,5 @@
 package com.czqwq.wikisearch;
 
-import java.awt.Desktop;
-import java.net.URI;
-
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
 
@@ -34,25 +31,17 @@ public class GTNHWikiSearch {
         if (key == null) {
             key = new KeyBinding("key.open", Keyboard.KEY_HOME, "key.gui.search");
             ClientRegistry.registerKeyBinding(key);
-            LOGGER.debug("Key binding registered: " + key.getKeyDescription());
-        } else {
-            LOGGER.debug("Key binding already registered: " + key.getKeyDescription());
         }
     }
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (key != null && key.isPressed()) {
-            LOGGER.debug("Wiki search key pressed");
-        }
-    }
+    public void onKeyInput(InputEvent.KeyInputEvent event) {}
 
     /** Start an async wiki search for the given item stack. Runs entirely on the client. */
     @SideOnly(Side.CLIENT)
     public static void search(ItemStack stack) {
         String displayName = stack.getDisplayName();
-        LOGGER.debug("Starting wiki search for: " + displayName);
         Thread thread = new Thread(() -> WikiSearchFetcher.fetchAndDisplay(displayName), "WikiSearch-" + displayName);
         thread.setDaemon(true);
         thread.start();

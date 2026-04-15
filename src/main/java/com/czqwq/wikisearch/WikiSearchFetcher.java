@@ -29,9 +29,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class WikiSearchFetcher {
 
-    private static final String WIKI_BASE = "https://gtnh.huijiwiki.com";
-    private static final String API_URL = WIKI_BASE
-        + "/api.php?action=query&list=search&srnamespace=0&srlimit=8&format=json&srsearch=";
     private static final int TIMEOUT_MS = 15000;
 
     public static class SearchResult {
@@ -50,23 +47,9 @@ public class WikiSearchFetcher {
      * Must be called from a background thread.
      */
     public static void fetchAndDisplay(String itemName) {
-        String cookie = Config.cookie;
-        if (cookie == null || cookie.isEmpty()) {
-            sendChat(
-                new ChatComponentText(
-                    EnumChatFormatting.GOLD + "[WikiSearch] "
-                        + EnumChatFormatting.RED
-                        + "未设置Cookie，无法访问Wiki。请使用 "
-                        + EnumChatFormatting.YELLOW
-                        + "/wikisearch cookie <cookie>"
-                        + EnumChatFormatting.RED
-                        + " 进行设置。"));
-            return;
-        }
-
         List<SearchResult> results;
         try {
-            results = fetchResults(itemName, cookie);
+            results = fetchResults(itemName, Config.cookie);
         } catch (Exception e) {
             GTNHWikiSearch.LOGGER.error("WikiSearch HTTP request failed", e);
             sendChat(
@@ -74,7 +57,12 @@ public class WikiSearchFetcher {
                     EnumChatFormatting.GOLD + "[WikiSearch] "
                         + EnumChatFormatting.RED
                         + "搜索请求失败: "
-                        + e.getMessage()));
+                        + e.getMessage()
+                        + "。如遇403，请先用 "
+                        + EnumChatFormatting.YELLOW
+                        + "/wikisearch cookie <cookie>"
+                        + EnumChatFormatting.RED
+                        + " 设置Cookie。"));
             return;
         }
 
@@ -111,10 +99,8 @@ public class WikiSearchFetcher {
 
             IChatComponent button = new ChatComponentText(EnumChatFormatting.AQUA + "[打开]");
             button.setChatStyle(
-                new ChatStyle()
-                    .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
-                    .setChatHoverEvent(
-                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(result.url))));
+                new ChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, result.url))
+                    .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(result.url))));
 
             line.appendSibling(button);
             sendChat(line);
@@ -124,7 +110,8 @@ public class WikiSearchFetcher {
     /** Fetch search results from the MediaWiki API. */
     public static List<SearchResult> fetchResults(String itemName, String cookie) throws Exception {
         String encoded = URLEncoder.encode(itemName, StandardCharsets.UTF_8.name());
-        URL url = new URL(API_URL + encoded);
+        String apiUrl = Config.searchApiUrl.replace("{item}", encoded);
+        URL url = new URL(apiUrl);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(TIMEOUT_MS);
@@ -133,10 +120,12 @@ public class WikiSearchFetcher {
             "User-Agent",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-        conn.setRequestProperty("Accept", "application/json, text/html;q=0.9, */*;q=0.8");
+        conn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         conn.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
         conn.setRequestProperty("Connection", "keep-alive");
-        conn.setRequestProperty("Cookie", cookie);
+        if (cookie != null && !cookie.isEmpty()) {
+            conn.setRequestProperty("Cookie", cookie);
+        }
 
         int code = conn.getResponseCode();
         if (code != 200) {
@@ -165,12 +154,14 @@ public class WikiSearchFetcher {
             JsonArray search = query.getAsJsonArray("search");
             if (search == null) return results;
 
+            String base = Config.wikiPageBase;
             for (JsonElement element : search) {
                 JsonObject obj = element.getAsJsonObject();
                 String title = obj.get("title")
                     .getAsString();
-                String pageUrl = WIKI_BASE + "/wiki/" + URLEncoder.encode(title, StandardCharsets.UTF_8.name())
-                    .replace("+", "_");
+                String pageUrl = base + "/wiki/"
+                    + URLEncoder.encode(title, StandardCharsets.UTF_8.name())
+                        .replace("+", "_");
                 results.add(new SearchResult(title, pageUrl));
             }
         } catch (Exception e) {
@@ -187,4 +178,3 @@ public class WikiSearchFetcher {
         }
     }
 }
-
