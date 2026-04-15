@@ -2,7 +2,6 @@ package com.czqwq.wikisearch;
 
 import java.awt.Desktop;
 import java.net.URI;
-import java.net.URLEncoder;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
@@ -27,19 +26,17 @@ public class GTNHWikiSearch {
     public static KeyBinding key;
 
     public static void init() {
-        // 注册按键绑定
         registerKeyBindings();
     }
 
     @SideOnly(Side.CLIENT)
     private static void registerKeyBindings() {
-        // 确保按键绑定只注册一次
         if (key == null) {
             key = new KeyBinding("key.open", Keyboard.KEY_HOME, "key.gui.search");
             ClientRegistry.registerKeyBinding(key);
-            LOGGER.info("Key binding registered: " + key.getKeyDescription());
+            LOGGER.debug("Key binding registered: " + key.getKeyDescription());
         } else {
-            LOGGER.info("Key binding already registered: " + key.getKeyDescription());
+            LOGGER.debug("Key binding already registered: " + key.getKeyDescription());
         }
     }
 
@@ -47,46 +44,37 @@ public class GTNHWikiSearch {
     @SubscribeEvent
     public void onKeyInput(InputEvent.KeyInputEvent event) {
         if (key != null && key.isPressed()) {
-            LOGGER.info("Wiki search key pressed");
+            LOGGER.debug("Wiki search key pressed");
         }
     }
 
-    public static boolean open(ItemStack stack) {
-        String displayName, url;
+    /** Send a search request to the server for the given item stack. */
+    @SideOnly(Side.CLIENT)
+    public static void search(ItemStack stack) {
+        String displayName = stack.getDisplayName();
+        LOGGER.debug("Sending wiki search request for: " + displayName);
+        WikiSearchNetwork.CHANNEL.sendToServer(new WikiSearchRequestMessage(displayName));
+    }
 
-        try {
-            // 只获取物品的显示名称
-            displayName = URLEncoder.encode(stack.getDisplayName(), "UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        // 构建GTNH Wiki搜索URL
-        url = String.format(
-            "https://gtnh.huijiwiki.com/index.php?title=特殊:搜索&search=%s&profile=default&sort=just_match",
-            displayName);
-
+    /** Open a URL in the system browser. Used by clickable chat result links. */
+    public static boolean openUrl(String url) {
         try {
             if (Desktop.isDesktopSupported() || System.getProperty("os.name")
                 .contains("Windows")) {
-                // Windows
                 Desktop.getDesktop()
                     .browse(new URI(url));
             } else {
                 Runtime runtime = Runtime.getRuntime();
                 if (System.getProperty("os.name")
                     .contains("Mac")) {
-                    // Mac
-                    runtime.exec(new String[] { "xdg-open", "\"" + url + "\"" });
+                    runtime.exec(new String[] { "open", url });
                 } else {
-                    // Linux和其他系统
                     runtime.exec(new String[] { "xdg-open", url });
                 }
             }
             return true;
         } catch (Exception e) {
-            LOGGER.error("Failed to open the url.");
+            LOGGER.error("Failed to open the url: " + url);
             e.printStackTrace();
             return false;
         }
