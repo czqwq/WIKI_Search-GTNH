@@ -62,7 +62,9 @@ public class WikiSearchFetcher {
                         + EnumChatFormatting.RED
                         + "搜索请求失败 ("
                         + e.getMessage()
-                        + ")，详情请查看日志。"));
+                        + (e.getMessage() != null && e.getMessage().contains("HTTP 403")
+                            ? ")，请尝试使用 /wikisearch auth 登录后再试，详情错误见日志。"
+                            : ")，详情请查看日志。")));
             return;
         }
 
