@@ -1,9 +1,5 @@
 package com.czqwq.wikisearch;
 
-import java.awt.Desktop;
-import java.net.URI;
-import java.net.URLEncoder;
-
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
 
@@ -27,68 +23,27 @@ public class GTNHWikiSearch {
     public static KeyBinding key;
 
     public static void init() {
-        // 注册按键绑定
         registerKeyBindings();
     }
 
     @SideOnly(Side.CLIENT)
     private static void registerKeyBindings() {
-        // 确保按键绑定只注册一次
         if (key == null) {
             key = new KeyBinding("key.open", Keyboard.KEY_HOME, "key.gui.search");
             ClientRegistry.registerKeyBinding(key);
-            LOGGER.info("Key binding registered: " + key.getKeyDescription());
-        } else {
-            LOGGER.info("Key binding already registered: " + key.getKeyDescription());
         }
     }
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (key != null && key.isPressed()) {
-            LOGGER.info("Wiki search key pressed");
-        }
-    }
+    public void onKeyInput(InputEvent.KeyInputEvent event) {}
 
-    public static boolean open(ItemStack stack) {
-        String displayName, url;
-
-        try {
-            // 只获取物品的显示名称
-            displayName = URLEncoder.encode(stack.getDisplayName(), "UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        // 构建GTNH Wiki搜索URL
-        url = String.format(
-            "https://gtnh.huijiwiki.com/index.php?title=特殊:搜索&search=%s&profile=default&sort=just_match",
-            displayName);
-
-        try {
-            if (Desktop.isDesktopSupported() || System.getProperty("os.name")
-                .contains("Windows")) {
-                // Windows
-                Desktop.getDesktop()
-                    .browse(new URI(url));
-            } else {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getProperty("os.name")
-                    .contains("Mac")) {
-                    // Mac
-                    runtime.exec(new String[] { "xdg-open", "\"" + url + "\"" });
-                } else {
-                    // Linux和其他系统
-                    runtime.exec(new String[] { "xdg-open", url });
-                }
-            }
-            return true;
-        } catch (Exception e) {
-            LOGGER.error("Failed to open the url.");
-            e.printStackTrace();
-            return false;
-        }
+    /** Start an async wiki search for the given item stack. Runs entirely on the client. */
+    @SideOnly(Side.CLIENT)
+    public static void search(ItemStack stack) {
+        String displayName = stack.getDisplayName();
+        Thread thread = new Thread(() -> WikiSearchFetcher.fetchAndDisplay(displayName), "WikiSearch-" + displayName);
+        thread.setDaemon(true);
+        thread.start();
     }
 }

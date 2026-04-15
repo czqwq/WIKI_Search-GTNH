@@ -1,6 +1,6 @@
 {
   "required": true,
-  "minVersion": "0.7.11",
+  "minVersion": "0.8.5-GTNH",
   "package": "com.czqwq.wikisearch.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.wikisearch.refmap.json",
