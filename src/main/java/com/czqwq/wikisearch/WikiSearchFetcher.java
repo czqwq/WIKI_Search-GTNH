@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
@@ -114,8 +117,18 @@ public class WikiSearchFetcher {
         URL url = new URL(apiUrl);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        // Apply Chrome-like cipher suite ordering on HTTPS connections.
+        // Cloudflare uses the JA3 TLS fingerprint to detect non-browser clients;
+        // reordering cipher suites makes our ClientHello much closer to Chrome 124.
+        if (conn instanceof HttpsURLConnection https) {
+            https.setSSLSocketFactory(new ChromeLikeSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault()));
+        }
+
         conn.setConnectTimeout(TIMEOUT_MS);
         conn.setReadTimeout(TIMEOUT_MS);
+        conn.setInstanceFollowRedirects(true);
+        // --- Headers that match a real Chrome 124 browser request ---
         conn.setRequestProperty(
             "User-Agent",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -123,6 +136,16 @@ public class WikiSearchFetcher {
         conn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         conn.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
         conn.setRequestProperty("Connection", "keep-alive");
+        conn.setRequestProperty("Upgrade-Insecure-Requests", "1");
+        conn.setRequestProperty(
+            "sec-ch-ua",
+            "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"");
+        conn.setRequestProperty("sec-ch-ua-mobile", "?0");
+        conn.setRequestProperty("sec-ch-ua-platform", "\"Windows\"");
+        conn.setRequestProperty("Sec-Fetch-Site", "none");
+        conn.setRequestProperty("Sec-Fetch-Mode", "navigate");
+        conn.setRequestProperty("Sec-Fetch-User", "?1");
+        conn.setRequestProperty("Sec-Fetch-Dest", "document");
         if (cookie != null && !cookie.isEmpty()) {
             conn.setRequestProperty("Cookie", cookie);
         }
