@@ -12,10 +12,13 @@ public class Config {
     public static String searchApiUrl = "";
     public static String wikiPageBase = "";
     public static String pingHost = "";
+    public static String userAgent = "";
 
     static final String DEFAULT_SEARCH_API_URL = "https://gtnh.huijiwiki.com/api.php?action=query&list=search&srnamespace=0&srlimit=8&format=json&srsearch={item}";
     static final String DEFAULT_WIKI_PAGE_BASE = "https://gtnh.huijiwiki.com";
     static final String DEFAULT_PING_HOST = "baidu.com";
+    static final String DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     public static void init(File configFile) {
         config = new Configuration(configFile);
@@ -43,6 +46,12 @@ public class Config {
             Configuration.CATEGORY_GENERAL,
             DEFAULT_PING_HOST,
             "Hostname used by /wikisearch ping to test network connectivity.");
+        userAgent = config.getString(
+            "userAgent",
+            Configuration.CATEGORY_GENERAL,
+            DEFAULT_USER_AGENT,
+            "HTTP User-Agent sent with wiki requests. Must match the browser used to obtain cf_clearance."
+                + " Set automatically by /wikisearch auth.");
         if (config.hasChanged()) {
             config.save();
         }
@@ -72,6 +81,16 @@ public class Config {
         }
         cookie = c;
         save();
+    }
+
+    public static void setUserAgent(String ua) {
+        userAgent = ua == null || ua.trim()
+            .isEmpty() ? DEFAULT_USER_AGENT : ua.trim();
+        if (config != null) {
+            config.get(Configuration.CATEGORY_GENERAL, "userAgent", DEFAULT_USER_AGENT)
+                .set(userAgent);
+            config.save();
+        }
     }
 
     public static void save() {

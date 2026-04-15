@@ -125,11 +125,11 @@ public class WikiSearchFetcher {
         conn.setConnectTimeout(TIMEOUT_MS);
         conn.setReadTimeout(TIMEOUT_MS);
         conn.setInstanceFollowRedirects(true);
-        // --- Headers that match a real Chrome 124 browser request ---
-        conn.setRequestProperty(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+        // Use the configured User-Agent (captured from the user's actual browser by /wikisearch auth).
+        // Cloudflare ties cf_clearance to both IP and User-Agent, so this must match exactly.
+        String ua = Config.userAgent != null && !Config.userAgent.isEmpty() ? Config.userAgent
+            : Config.DEFAULT_USER_AGENT;
+        conn.setRequestProperty("User-Agent", ua);
         conn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         conn.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
         conn.setRequestProperty("Connection", "keep-alive");
@@ -151,15 +151,19 @@ public class WikiSearchFetcher {
         if (code != 200) {
             // Collect diagnostic info and write to DEBUG log only
             StringBuilder diag = new StringBuilder();
-            diag.append("URL=").append(apiUrl);
+            diag.append("URL=")
+                .append(apiUrl);
             diag.append(", Cookie=")
                 .append(cookie != null && !cookie.isEmpty() ? "set(len=" + cookie.length() + ")" : "not set");
             String cfRay = conn.getHeaderField("cf-ray");
             String cfMitigated = conn.getHeaderField("cf-mitigated");
             String server = conn.getHeaderField("server");
-            if (cfRay != null) diag.append(", cf-ray=").append(cfRay);
-            if (cfMitigated != null) diag.append(", cf-mitigated=").append(cfMitigated);
-            if (server != null) diag.append(", server=").append(server);
+            if (cfRay != null) diag.append(", cf-ray=")
+                .append(cfRay);
+            if (cfMitigated != null) diag.append(", cf-mitigated=")
+                .append(cfMitigated);
+            if (server != null) diag.append(", server=")
+                .append(server);
             try (BufferedReader errReader = new BufferedReader(
                 new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
                 StringBuilder body = new StringBuilder();
@@ -168,7 +172,8 @@ public class WikiSearchFetcher {
                     body.append(l);
                 }
                 if (body.length() > 0) {
-                    diag.append(", errorBody=").append(body.substring(0, Math.min(body.length(), 256)));
+                    diag.append(", errorBody=")
+                        .append(body.substring(0, Math.min(body.length(), 256)));
                 }
             } catch (Exception ignored) {}
             GTNHWikiSearch.LOGGER.debug("WikiSearch request failed: {}", diag);

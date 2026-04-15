@@ -1,5 +1,7 @@
 package com.czqwq.wikisearch;
 
+import java.awt.Desktop;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/wikisearch <cookie <cookie>|reload|ping [host]>";
+        return "/wikisearch <auth|cookie <cookie>|reload|ping [host]>";
     }
 
     @Override
@@ -32,6 +34,47 @@ public class WikiSearchCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("auth")) {
+            LocalAuthServer server = LocalAuthServer.startNew();
+            if (server == null) {
+                sender.addChatMessage(
+                    new ChatComponentText(
+                        EnumChatFormatting.GOLD + "[WikiSearch] "
+                            + EnumChatFormatting.RED
+                            + "无法启动本地认证服务器（端口 25581-25590 均被占用）。"));
+                return;
+            }
+            String url = "http://localhost:" + server.getPort() + "/";
+            sender.addChatMessage(
+                new ChatComponentText(
+                    EnumChatFormatting.GOLD + "[WikiSearch] "
+                        + EnumChatFormatting.GREEN
+                        + "正在打开浏览器认证助手... "
+                        + EnumChatFormatting.YELLOW
+                        + url));
+            try {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop()
+                    .isSupported(Desktop.Action.BROWSE)) {
+                    Desktop.getDesktop()
+                        .browse(new URI(url));
+                } else {
+                    // Fallback: try xdg-open on Linux
+                    Runtime.getRuntime()
+                        .exec(new String[] { "xdg-open", url });
+                }
+            } catch (Exception e) {
+                GTNHWikiSearch.LOGGER.debug("[WikiSearch] Failed to open browser", e);
+                sender.addChatMessage(
+                    new ChatComponentText(
+                        EnumChatFormatting.GOLD + "[WikiSearch] "
+                            + EnumChatFormatting.RED
+                            + "无法自动打开浏览器，请手动访问: "
+                            + EnumChatFormatting.YELLOW
+                            + url));
+            }
+            return;
+        }
+
         if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
             Config.reload();
             sender.addChatMessage(
@@ -72,7 +115,7 @@ public class WikiSearchCommand extends CommandBase {
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "cookie", "reload", "ping");
+            return getListOfStringsMatchingLastWord(args, "auth", "cookie", "reload", "ping");
         }
         return null;
     }

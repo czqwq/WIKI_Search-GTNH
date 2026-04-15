@@ -133,8 +133,9 @@ public class LocalAuthServer {
     // ── Request dispatch ───────────────────────────────────────────────────────
 
     private void handleClient(Socket client) {
-        try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
+        try (
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             PrintWriter pw = new PrintWriter(
                 new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8))) {
 
@@ -149,7 +150,9 @@ public class LocalAuthServer {
                 if (headerLine.toLowerCase()
                     .startsWith("content-length:")) {
                     try {
-                        contentLength = Integer.parseInt(headerLine.substring(15).trim());
+                        contentLength = Integer.parseInt(
+                            headerLine.substring(15)
+                                .trim());
                     } catch (NumberFormatException ignored) {}
                 }
             }
@@ -327,8 +330,7 @@ public class LocalAuthServer {
     private String buildHelperPage() {
         // Bookmarklet: runs inside the wiki tab, opens a tiny window to our /capture endpoint.
         // Fallback: if window.open is blocked (popup blocker), alert the user to allow it.
-        String bmJs = "javascript:(function(){"
-            + "var u='http://localhost:"
+        String bmJs = "javascript:(function(){" + "var u='http://localhost:"
             + port
             + "/capture'"
             + "+'?cookie='+encodeURIComponent(document.cookie)"
@@ -342,8 +344,7 @@ public class LocalAuthServer {
         String bmHref = bmJs.replace("&", "&amp;")
             .replace("\"", "&quot;");
 
-        return "<!DOCTYPE html>\n"
-            + "<html lang=\"zh-CN\">\n"
+        return "<!DOCTYPE html>\n" + "<html lang=\"zh-CN\">\n"
             + "<head>\n"
             + "<meta charset=\"UTF-8\">\n"
             + "<title>WikiSearch 认证助手</title>\n"
