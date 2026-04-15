@@ -55,18 +55,14 @@ public class WikiSearchFetcher {
         try {
             results = fetchResults(itemName, Config.cookie);
         } catch (Exception e) {
-            GTNHWikiSearch.LOGGER.error("WikiSearch HTTP request failed", e);
+            GTNHWikiSearch.LOGGER.debug("WikiSearch HTTP request failed", e);
             sendChat(
                 new ChatComponentText(
                     EnumChatFormatting.GOLD + "[WikiSearch] "
                         + EnumChatFormatting.RED
-                        + "搜索请求失败: "
+                        + "搜索请求失败 ("
                         + e.getMessage()
-                        + "。如遇403，请先用 "
-                        + EnumChatFormatting.YELLOW
-                        + "/wikisearch cookie <cookie>"
-                        + EnumChatFormatting.RED
-                        + " 设置Cookie。"));
+                        + ")，详情请查看日志。"));
             return;
         }
 
@@ -153,23 +149,17 @@ public class WikiSearchFetcher {
 
         int code = conn.getResponseCode();
         if (code != 200) {
-            // Collect diagnostic info for a detailed error message
+            // Collect diagnostic info and write to DEBUG log only
             StringBuilder diag = new StringBuilder();
-            diag.append("URL=")
-                .append(apiUrl);
+            diag.append("URL=").append(apiUrl);
             diag.append(", Cookie=")
                 .append(cookie != null && !cookie.isEmpty() ? "set(len=" + cookie.length() + ")" : "not set");
-            // Log Cloudflare diagnostic headers if present
             String cfRay = conn.getHeaderField("cf-ray");
             String cfMitigated = conn.getHeaderField("cf-mitigated");
             String server = conn.getHeaderField("server");
-            if (cfRay != null) diag.append(", cf-ray=")
-                .append(cfRay);
-            if (cfMitigated != null) diag.append(", cf-mitigated=")
-                .append(cfMitigated);
-            if (server != null) diag.append(", server=")
-                .append(server);
-            // Try to read the error response body (first 512 chars)
+            if (cfRay != null) diag.append(", cf-ray=").append(cfRay);
+            if (cfMitigated != null) diag.append(", cf-mitigated=").append(cfMitigated);
+            if (server != null) diag.append(", server=").append(server);
             try (BufferedReader errReader = new BufferedReader(
                 new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
                 StringBuilder body = new StringBuilder();
@@ -178,11 +168,11 @@ public class WikiSearchFetcher {
                     body.append(l);
                 }
                 if (body.length() > 0) {
-                    diag.append(", errorBody=")
-                        .append(body.substring(0, Math.min(body.length(), 256)));
+                    diag.append(", errorBody=").append(body.substring(0, Math.min(body.length(), 256)));
                 }
             } catch (Exception ignored) {}
-            throw new RuntimeException("HTTP " + code + " [" + diag + "]");
+            GTNHWikiSearch.LOGGER.debug("WikiSearch request failed: {}", diag);
+            throw new RuntimeException("HTTP " + code);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -258,15 +248,14 @@ public class WikiSearchFetcher {
                 }
             }
         } catch (Exception e) {
-            GTNHWikiSearch.LOGGER.error("WikiSearch ping failed for host={}", host, e);
+            GTNHWikiSearch.LOGGER.debug("WikiSearch ping failed for host={}", host, e);
             sendChat(
                 new ChatComponentText(
                     EnumChatFormatting.GOLD + "[WikiSearch] "
                         + EnumChatFormatting.RED
                         + "✘ ping "
                         + host
-                        + " 失败: "
-                        + e.getMessage()));
+                        + " 失败，详情请查看日志。"));
         }
     }
 
@@ -291,7 +280,7 @@ public class WikiSearchFetcher {
                 results.add(new SearchResult(title, pageUrl));
             }
         } catch (Exception e) {
-            GTNHWikiSearch.LOGGER.error("WikiSearch failed to parse search results", e);
+            GTNHWikiSearch.LOGGER.debug("WikiSearch failed to parse search results", e);
         }
         return results;
     }
