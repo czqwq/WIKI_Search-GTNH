@@ -319,6 +319,17 @@ public class LocalAuthServer {
 
     // ── HTML page generation ───────────────────────────────────────────────────
 
+    /** Escapes a Java string so it is safe to embed inside a JS double-quoted string literal. */
+    private static String escapeForJsString(String s) {
+        return s.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\r", "\\r")
+            .replace("\n", "\\n")
+            // Prevent </script> tag from breaking out of the script block
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e");
+    }
+
     /**
      * Builds the auth-helper HTML page.
      *
@@ -366,6 +377,11 @@ public class LocalAuthServer {
             + "text-decoration:none;font-size:.9em;cursor:pointer;font-family:inherit}\n"
             + ".wiki-btn{background:#1f6feb;color:#fff}\n"
             + ".bm-btn{background:#388bfd;color:#fff;cursor:grab}\n"
+            + ".copy-btn{background:#2ea043;color:#fff;border:none;cursor:pointer}\n"
+            + ".copy-btn.copied{background:#1a7f37}\n"
+            + ".btn-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px}\n"
+            + ".warn{color:#f85149;font-size:.83em;line-height:1.6;margin-top:10px;"
+            + "padding:8px 12px;background:#2d1016;border:1px solid #6e2a2a;border-radius:6px}\n"
             + "#statusBox{margin-top:20px;padding:12px 16px;border-radius:8px;"
             + "background:#161b22;border:1px solid #21262d;"
             + "text-align:center;color:#8b949e;font-size:.9em}\n"
@@ -390,9 +406,17 @@ public class LocalAuthServer {
             + "    <div class=\"step-title\">第 2 步 &mdash; 获取并发送 Cookie</div>\n"
             + "    <p>将下方按钮<b>拖到浏览器书签栏</b>，然后切换到 Wiki 标签页，点击该书签。<br>\n"
             + "       浏览器会自动弹出小窗口将 Cookie 发送给游戏，随后 Minecraft 聊天栏会显示成功提示。</p>\n"
-            + "    <a href=\""
+            + "    <div class=\"btn-row\">\n"
+            + "      <a href=\""
             + bmHref
-            + "\" class=\"btn bm-btn\">\uD83D\uDCCE 拖我到书签栏</a>\n"
+            + "\" id=\"bmLink\" class=\"btn bm-btn\">\uD83D\uDCCE 拖我到书签栏</a>\n"
+            + "      <button class=\"btn copy-btn\" id=\"copyBtn\" onclick=\"copyBm()\">\uD83D\uDCCB 复制书签链接</button>\n"
+            + "    </div>\n"
+            + "    <p class=\"warn\">\u26a0\ufe0f <b>如果无法拖动到书签栏：</b>"
+            + " 请按 <b>Ctrl+D</b>（Mac 用 <b>\u2318D</b>）先将本助手页面收藏，"
+            + "然后点击「复制书签链接」按钮复制链接地址，"
+            + "再打开浏览器的书签管理器，找到刚才收藏的条目，"
+            + "将其地址（URL）栏中的内容替换为刚刚复制的链接，保存后即可使用。</p>\n"
             + "    <p style=\"margin-top:10px;font-size:.82em;\">\uD83D\uDCA1"
             + " 若弹窗被拦截，请在浏览器地址栏右侧<b>允许弹出窗口</b>后重试。</p>\n"
             + "  </div>\n"
@@ -400,6 +424,31 @@ public class LocalAuthServer {
             + "  <div id=\"statusBox\">等待认证...</div>\n"
             + "</div>\n"
             + "<script>\n"
+            + "var bmUrl=\""
+            + escapeForJsString(bmJs)
+            + "\";\n"
+            + "function copyBm(){\n"
+            + "  var btn=document.getElementById('copyBtn');\n"
+            + "  var ok=function(){\n"
+            + "    btn.textContent='\u2713 \u5df2\u590d\u5236';\n"
+            + "    btn.classList.add('copied');\n"
+            + "    setTimeout(function(){\n"
+            + "      btn.textContent='\uD83D\uDCCB \u590d\u5236\u4e66\u7b7e\u94fe\u63a5';\n"
+            + "      btn.classList.remove('copied');\n"
+            + "    },2000);\n"
+            + "  };\n"
+            + "  var fallback=function(){\n"
+            + "    var ta=document.createElement('textarea');\n"
+            + "    ta.value=bmUrl;ta.style.position='fixed';ta.style.opacity='0';\n"
+            + "    document.body.appendChild(ta);ta.select();\n"
+            + "    try{document.execCommand('copy');ok();}"
+            + "catch(e){alert('\u590d\u5236\u5931\u8d25\uff0c\u8bf7\u624b\u52a8\u590d\u5236\uff1a\\n'+bmUrl);}\n"
+            + "    document.body.removeChild(ta);\n"
+            + "  };\n"
+            + "  if(navigator.clipboard&&navigator.clipboard.writeText){\n"
+            + "    navigator.clipboard.writeText(bmUrl).then(ok).catch(fallback);\n"
+            + "  }else{fallback();}\n"
+            + "}\n"
             + "var t=setInterval(function(){\n"
             + "  fetch('/status').then(function(r){return r.json();}).then(function(d){\n"
             + "    if(d.done){\n"
