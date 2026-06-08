@@ -41,7 +41,11 @@ public class WikiSearchCommand extends CommandBase {
                     new ChatComponentText(
                         EnumChatFormatting.GOLD + "[WikiSearch] "
                             + EnumChatFormatting.RED
-                            + "无法启动本地认证服务器（端口 25581-25590 均被占用）。"));
+                            + "无法启动本地认证服务器（端口"
+                            + Config.PORT_START
+                            + " - "
+                            + Config.PORT_END
+                            + "均被占用）。"));
                 return;
             }
             String url = "http://localhost:" + server.getPort() + "/";
