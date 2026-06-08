@@ -1,5 +1,8 @@
 package com.czqwq.wikisearch;
 
+import static com.czqwq.wikisearch.Config.PORT_END;
+import static com.czqwq.wikisearch.Config.PORT_START;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,9 +49,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class LocalAuthServer {
 
     /** Port search range (tries each in order until one binds). */
-    private static final int PORT_START = 25581;
-
-    private static final int PORT_END = 25590;
 
     /** Server auto-shuts-down after this many ms without a successful capture. */
     private static final int ACCEPT_TIMEOUT_MS = 5 * 60 * 1000;

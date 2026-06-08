@@ -13,6 +13,9 @@ public class Config {
     public static String wikiPageBase = "";
     public static String pingHost = "";
     public static String userAgent = "";
+    public static int PORT_START;
+
+    public static int PORT_END;
 
     static final String DEFAULT_SEARCH_API_URL = "https://gtnh.huijiwiki.com/api.php?action=query&list=search&srnamespace=0&srlimit=8&format=json&srsearch={item}";
     static final String DEFAULT_WIKI_PAGE_BASE = "https://gtnh.huijiwiki.com";
@@ -26,6 +29,20 @@ public class Config {
     }
 
     private static void load() {
+        PORT_START = config.getInt(
+            "LocalServerStartPort",
+            Configuration.CATEGORY_GENERAL,
+            10000,
+            0,
+            65535,
+            "start port for local server to listen on");
+        PORT_END = config.getInt(
+            "LocalServerEndPort",
+            Configuration.CATEGORY_GENERAL,
+            25590,
+            0,
+            65535,
+            "end port for local server to listen on");
         cookie = config.getString(
             "cookie",
             Configuration.CATEGORY_GENERAL,
