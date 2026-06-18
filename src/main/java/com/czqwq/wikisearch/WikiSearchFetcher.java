@@ -41,6 +41,7 @@ public final class WikiSearchFetcher {
         engines.add(new TavilySearchEngine()); // searchProvider=tavily + searchApiKey
         engines.add(new BochaSearchEngine()); // searchProvider=bocha + searchApiKey
         engines.add(new BaiduSearchEngine()); // searchProvider=baidu + searchApiKey
+        engines.add(new SearXNGSearchEngine()); // free, public SearXNG instance
         engines.add(new DuckDuckGoSearchEngine()); // free, always available
         engines.add(new BingSearchEngine()); // free, always available
         return new FailsafeSearchEngine(engines);

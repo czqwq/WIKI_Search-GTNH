@@ -38,6 +38,8 @@ public class Config {
     public static String searchProvider = "";
     /** API key for provider that requires one (brave / tavily / bocha / baidu). */
     public static String searchApiKey = "";
+    /** SearXNG instance base URL (free metasearch, no API key needed). */
+    public static String searxngUrl = "";
 
     /** Parsed list of title suffixes to strip (never null). */
     public static List<String> titleStripSuffixes = Collections.emptyList();
@@ -107,6 +109,11 @@ public class Config {
             Configuration.CATEGORY_GENERAL,
             "",
             "API key for the selected provider (brave / tavily / bocha / baidu).");
+        searxngUrl = config.getString(
+            "searxngUrl",
+            Configuration.CATEGORY_GENERAL,
+            "https://search.bus-hit.me",
+            "SearXNG instance base URL. Free metasearch, no API key needed.");
 
         String suffixesRaw = config.getString(
             "titleStripSuffixes",

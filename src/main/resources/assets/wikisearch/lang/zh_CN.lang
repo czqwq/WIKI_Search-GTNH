@@ -10,7 +10,7 @@ wikisearch.search.error_403=搜索请求失败 (%1$s)，请尝试使用 /wikisea
 wikisearch.search.error_generic=搜索请求失败 (%1$s)，详情请查看日志。
 wikisearch.search.unknown_error=未知错误
 wikisearch.search.all_engines_failed=所有搜索引擎均未返回结果
-wikisearch.search.configure_fallback_hint=可在配置中设置 searchProvider 和 searchApiKey，可选: brave / tavily / bocha / baidu
+wikisearch.search.configure_fallback_hint=可用 searxngUrl (免费公共实例) 或设置 searchProvider + searchApiKey: brave/tavily/bocha/baidu
 
 # Ping
 wikisearch.ping.start=正在 ping %1$s ...

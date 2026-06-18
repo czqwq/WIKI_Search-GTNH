@@ -10,7 +10,7 @@ wikisearch.search.error_403=Search request failed (%1$s). Try /wikisearch auth t
 wikisearch.search.error_generic=Search request failed (%1$s). See log for details.
 wikisearch.search.unknown_error=Unknown error
 wikisearch.search.all_engines_failed=All search engines returned no results
-wikisearch.search.configure_fallback_hint=Set searchProvider + searchApiKey. Options: brave / tavily / bocha / baidu
+wikisearch.search.configure_fallback_hint=Use searxngUrl (free public) or set searchProvider + searchApiKey: brave/tavily/bocha/baidu
 
 # Ping
 wikisearch.ping.start=Pinging %1$s ...
