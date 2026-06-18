@@ -16,11 +16,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-
+import com.czqwq.wikisearch.chat.ChatFormatter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -247,19 +243,11 @@ public class LocalAuthServer {
 
     private void applyAndNotify(String cookie, String ua) {
         Config.setCookie(cookie);
-        if (ua != null && !ua.isEmpty()) {
-            Config.setUserAgent(ua);
-        }
+        // setUserAgent 暂时禁用
+        // if (ua != null && !ua.isEmpty()) { Config.setUserAgent(ua); }
         captured.set(true);
 
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-        if (player != null) {
-            player.addChatMessage(
-                new ChatComponentText(
-                    EnumChatFormatting.GOLD + "[WikiSearch] "
-                        + EnumChatFormatting.GREEN
-                        + "✓ 认证成功！Cookie 已自动保存，现在可以正常搜索了。"));
-        }
+        ChatFormatter.displayAuthSuccess();
     }
 
     // ── HTTP response helpers ──────────────────────────────────────────────────

@@ -40,6 +40,11 @@ public class ChromeLikeSSLSocketFactory extends SSLSocketFactory {
         this.delegate = delegate;
     }
 
+    /** Convenience: wraps the JVM default SSL socket factory. */
+    public static SSLSocketFactory createDefault() {
+        return new ChromeLikeSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
+    }
+
     private static String[] reorder(String[] available) {
         List<String> supported = Arrays.asList(available);
         List<String> ordered = new ArrayList<>();

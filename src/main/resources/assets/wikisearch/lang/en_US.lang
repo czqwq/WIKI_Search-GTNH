@@ -1,2 +1,31 @@
 key.gui.search=MCMOD Item Search
 key.open=Search Items
+
+# Search results
+wikisearch.search.header=Search results for "%1$s" (%2$d items):
+wikisearch.search.no_results=No pages found for "%1$s".
+wikisearch.search.open_button=[Open]
+wikisearch.search.open_hover=Click to open:
+wikisearch.search.error_403=Search request failed (%1$s). Try /wikisearch auth to log in. See log for details.
+wikisearch.search.error_generic=Search request failed (%1$s). See log for details.
+wikisearch.search.unknown_error=Unknown error
+wikisearch.search.all_engines_failed=All search engines returned no results
+wikisearch.search.configure_fallback_hint=Set searchProvider + searchApiKey. Options: brave / tavily / bocha / baidu
+
+# Ping
+wikisearch.ping.start=Pinging %1$s ...
+wikisearch.ping.success=✔ %1$s (%2$s) reachable, took %3$d ms
+wikisearch.ping.success_tcp=✔ %1$s (%2$s) TCP:80 reachable, took %3$d ms
+wikisearch.ping.failure=✘ %1$s (%2$s) unreachable: %3$s
+wikisearch.ping.error=✘ Ping %1$s failed. See log for details.
+
+# Authentication
+wikisearch.auth.ports_exhausted=Cannot start local auth server (ports %1$d - %2$d are all in use).
+wikisearch.auth.server_started=Opening browser auth helper... %1$s
+wikisearch.auth.browser_failed=Cannot open browser automatically. Please manually visit: %1$s
+wikisearch.auth.success=✓ Auth successful! Cookie saved. You can now search normally.
+
+# Command
+wikisearch.command.config_reloaded=Configuration reloaded from local file.
+wikisearch.command.cookie_saved=Cookie set and saved to local configuration.
+wikisearch.command.usage_prefix=Usage:

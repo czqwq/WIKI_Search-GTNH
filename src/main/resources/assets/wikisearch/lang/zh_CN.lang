@@ -1,2 +1,31 @@
 key.gui.search=MC百科物品搜索
 key.open=使用物品搜索
+
+# Search results
+wikisearch.search.header=搜索 "%1$s" 的结果 (%2$d 项):
+wikisearch.search.no_results=未找到 "%1$s" 的相关页面。
+wikisearch.search.open_button=[打开]
+wikisearch.search.open_hover=点击打开:
+wikisearch.search.error_403=搜索请求失败 (%1$s)，请尝试使用 /wikisearch auth 登录后再试，详情错误见日志。
+wikisearch.search.error_generic=搜索请求失败 (%1$s)，详情请查看日志。
+wikisearch.search.unknown_error=未知错误
+wikisearch.search.all_engines_failed=所有搜索引擎均未返回结果
+wikisearch.search.configure_fallback_hint=可在配置中设置 searchProvider 和 searchApiKey，可选: brave / tavily / bocha / baidu
+
+# Ping
+wikisearch.ping.start=正在 ping %1$s ...
+wikisearch.ping.success=✔ %1$s (%2$s) 可达，耗时 %3$d ms
+wikisearch.ping.success_tcp=✔ %1$s (%2$s) TCP:80 可达，耗时 %3$d ms
+wikisearch.ping.failure=✘ %1$s (%2$s) 不可达: %3$s
+wikisearch.ping.error=✘ ping %1$s 失败，详情请查看日志。
+
+# Authentication
+wikisearch.auth.ports_exhausted=无法启动本地认证服务器（端口 %1$d - %2$d 均被占用）。
+wikisearch.auth.server_started=正在打开浏览器认证助手... %1$s
+wikisearch.auth.browser_failed=无法自动打开浏览器，请手动访问: %1$s
+wikisearch.auth.success=✓ 认证成功！Cookie 已自动保存，现在可以正常搜索了。
+
+# Command
+wikisearch.command.config_reloaded=配置已从本地文件重新加载。
+wikisearch.command.cookie_saved=Cookie 已设置并保存到本地配置文件。
+wikisearch.command.usage_prefix=用法:
